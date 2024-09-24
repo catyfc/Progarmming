@@ -1,0 +1,17 @@
+devasc@Labvm:~$ cd labs/prne/
+devasc@Labvm:~/labs/prnes python3 version.py
+Devices list: ['192.168.56.101', '192.168.56.130']
+Establishing SSH session: 192.168.56.101 cisco cisco123!
+...
+Connected to: 192.168.56.101
+Getting version information
+Got version: Version 16.09.05
+Establishing SSH session: 192.168.56.130 cisco cisco123!
+... Connected to: 192.168.56.130
+...
+Getting version information
+Got version: Version 17.03.02
+The file version-info-out.txt has been created with device version data
+devasc@labvm:-/labs/prnes
+...
+...
