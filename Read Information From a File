@@ -1,0 +1,18 @@
+
+# Open file for reading
+file = open('devices-01.txt', 'r')
+
+# Read the file one line at a time a strip off any extra whitespace
+# characters for each line
+name = file.readline().strip()
+ip address = file.readline().strip()
+os_type = file.readline().strip()
+username = file.readline().strip()
+password = file.readline().strip()
+
+# Display the device information
+print('Device name:', name)
+print('IP address:', ip_address)
+print('0Stype: ', os_type)
+print('Username:', username)
+print('Password:',password)
