@@ -1,0 +1,66 @@
+from netmiko import ConnectHandler
+device = {
+    'device': 'cisco_ios',
+    'host': '192.168.10.105',
+    'username': 'admin',
+    'password': 'password'
+}
+
+
+def creating_session():
+    try: 
+        session = ConnectHandler(**device)
+        running_config = session.send_command('show running-config')
+        with open('running_config.txt', 'w') as file:
+            file.write(running_config)
+        print("Session created and running configuration saved ")
+        return session, running_config
+    except Exception as e:
+        print(f"Error creating session: {e}")
+        return None
+        
+              
+hardening_check = {
+    'Password Encryption': 'service password-encryption',
+    'SSH Enabled': 'transport input ssh',
+    'IP domain lookup': 'no ip domain-lookup',
+    'EXEC timeout':'exec-timeout',
+    'Syslog Server Configured': 'logging host',
+    'NTP Authentication': 'ntp authentication-key',
+    'HTTP Server Disabled': 'no ip http server',
+}
+
+
+def check_hardening(running_config):
+    for check, rule in hardening_check.items():
+        status = "[PASS]" if rule in running_config else "[FAIL]"
+        print(f"{status} {check}")
+
+def syslog_configuration(session):
+    try:
+        syslogServerIp = '192.168.56.101'
+        syslogPort = '54'
+        facility_level = ['auth', 'syslog']
+        trap_level = ['error', 'warning', 'informational']
+        commands = [f'logging host {syslogServerIp} {syslogPort}',
+                   f"logging facility {' '.join(facility_level)}",
+                   f"logging trap {' '.join(trap_level)}"]
+        session.send_config_set(commands)
+        print('Syslog configuration set successfully')
+    except Exception as e:
+        print(f'Error: {e}')
+
+
+def main():
+    session_data = creating_session()
+    if session_data:
+        session, running_config = session_data
+        check_hardening(running_config)
+        syslog_configuration(session)
+        session.disconnect()
+        print("Session closed successfully.")
+    else:
+        print("Failed to create a session. Exiting...")
+
+if __name__ == '__main__':
+    main()
