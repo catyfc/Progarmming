@@ -1,14 +1,15 @@
 from netmiko import ConnectHandler
 
-# Define device details
+# device details
 device = {
-    'device_type': 'cisco_ios',  # corrected key
-    'host': '192.168.10.105',
-    'username': 'admin',
-    'password': 'password'
+    'device_type': 'cisco_ios', 
+    'host': '192.168.56.101',
+    'username': 'cisco',
+    'password': 'cisco123!',
+    'secret': 'class123!'
 }
 
-# Define hardening checks
+# hardening checks
 hardening_check = {
     'Password Encryption': 'service password-encryption',
     'SSH Enabled': 'transport input ssh',
@@ -42,23 +43,23 @@ def syslog_configuration(session):
     except Exception as e:
         print(f'Error: {e}')
 
-# Create session outside any function
+# Create session 
 session = ConnectHandler(**device)
 print("Session created successfully.")
 
-# Retrieve running config
+# retrieve running config
 running_config = session.send_command('show running-config')
 with open('running_config.txt', 'w') as file:
     file.write(running_config)
 
 print("Running configuration saved.")
 
-# Perform hardening checks
+# perform hardening checks
 check_hardening(running_config)
 
-# Configure syslog
+# configure syslog
 syslog_configuration(session)
 
-# Disconnect session
+# disconnect session
 session.disconnect()
 print("Session closed successfully.")
