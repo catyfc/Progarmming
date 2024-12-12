@@ -1,0 +1,130 @@
+from netmiko import ConnectHandler 
+
+# device details
+device = {
+    'device_type': 'cisco_ios', 
+    'host': '192.168.56.101',
+    'username': 'cisco',
+    'password': 'cisco123!',
+    'secret': 'class123!'
+}
+
+# hardening checks
+hardening_check = {
+    'Password Encryption': 'service password-encryption',
+    'SSH Enabled': 'transport input ssh',
+    'IP domain lookup': 'no ip domain-lookup',
+    'EXEC timeout': 'exec-timeout',
+    'Syslog Server Configured': 'logging host',
+    'NTP Authentication': 'ntp authentication-key',
+    'HTTP Server Disabled': 'no ip http server',
+}
+
+def check_hardening(running_config):
+    """Perform hardening checks on the running configuration."""
+    for check, rule in hardening_check.items():
+        status = "[PASS]" if rule in running_config else "[FAIL]"
+        print(f"{status} {check}")
+
+def syslog_configuration(session):
+    """Configure syslog on the device."""
+    try:
+        syslogServerIp = '192.168.56.101'
+        syslogPort = '54'
+        facility_level = ['auth', 'syslog']
+        trap_level = ['error', 'warning', 'informational']
+        commands = [
+            f'logging host {syslogServerIp} {syslogPort}',
+            f"logging facility {' '.join(facility_level)}",
+            f"logging trap {' '.join(trap_level)}"
+        ]
+        session.send_config_set(commands)
+        print('Syslog configuration set successfully')
+    except Exception as e:
+        print(f'Error: {e}')
+
+def int_conf(session):
+    commands = [
+    'interface loopback0',
+    'ip address 127.0.0.10 255.255.255.255',
+    'no shutdown',
+    'interface s0/0/1',
+    'ip address 192.168.10.1 255.255.255.0',
+    'no shutdown'
+    ]
+    session.send_config_set(commands)
+    print('Interfaces configurations set successfully')
+
+def ospf_conf(session):
+    commands = [
+    'router ospf 1',
+    'network 192.168.1.0 0.0.0.255 area 0'
+    ]
+    session.send_config_set(commands)
+    print('Protocol OSPF set successfully')
+
+def eigrp_conf(session):
+    commands = [
+    'router eigrp 10',
+    'network 192.168.1.0 0.0.0.255'
+    'no auto-summary'
+    ]
+    session.send_config_set(commands)
+    print('Protocol EIGRP set successfully')
+
+def rip_conf(session):
+    commands = [
+    'router rip',
+    'version 2',
+    'network 192.168.1.0',
+    'no auto-summary'
+    ]
+    session.send_config_set(commands)
+    print('Protocol RIP set successfully')
+
+def display_menu(session):
+    print("=== Protocol Menu ===")
+    print("1. Protocol OSPF")
+    print("2. Protocol EIGRP")
+    print("3. Protocol RIP")
+    print("4. Exit")
+    choice = input("Enter your choice (1-4): ")  # Get user input
+    while True:
+        if choice == '1':
+            # Call for the OSPF protocol 
+            ospf_conf(session)
+        elif choice == '2':
+            # Call for the EIGRP protocol
+            eigrp_conf(session)
+        elif choice == '3':
+            # Call for the RIP protocol
+            rip_conf(session)
+        elif choice == '4':
+            print("Exiting the program...")
+            break
+        else:
+            print("Invalid choice. Please select a valid option.")
+
+
+# Create session 
+session = ConnectHandler(**device)
+print("Session created successfully.")
+
+# retrieve running config
+running_config = session.send_command('show running-config')
+with open('running_config.txt', 'w') as file:
+    file.write(running_config)
+
+print("Running configuration saved.")
+
+# perform hardening checks
+check_hardening(running_config)
+
+# configure syslog
+syslog_configuration(session)
+int_conf(session)
+display_menu(session)
+
+# disconnect session
+session.disconnect()
+print("Session closed successfully.")
